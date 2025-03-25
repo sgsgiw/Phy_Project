@@ -402,7 +402,7 @@
         </div>
     </div>
     <div class="content">
-        <img src="pexels-julkoha-28137428.jpg" alt="Background" class="background-image">
+        <img src="images/Background.jpg" alt="Background" class="background-image">
         <div id="first-section" class="right-panel">
             <h2>AI-Powered <br> Chemistry Learning</h2>
             <p>Discover elements instantly using your camera. Learn chemistry in a fun and interactive way.</p>
@@ -563,8 +563,9 @@
 
             // Convert canvas to data URL and display the captured image
             imageData = canvas.toDataURL('image/jpeg');
-            capturedImage.src = image
-                        // Show captured image, hide video
+            capturedImage.src = imageData;
+
+            // Show captured image, hide video
             video.style.display = 'none';
             capturedImage.style.display = 'block';
 
@@ -589,7 +590,7 @@
 
                 // Send to backend for processing
                 const response = await fetch('/analyze', {
-                    method: 'POST', // Ensure this matches the server's allowed method
+                    method: 'POST',
                     body: formData
                 });
 
@@ -634,3 +635,4 @@
     </script>
 </body>
 </html>
+<!-- End of index.html -->
