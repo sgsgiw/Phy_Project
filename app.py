@@ -2,8 +2,10 @@ from flask import Flask, render_template, request, jsonify
 import os
 import tempfile
 from Chatnot import extract_text_from_image, chat_with_gemini, elements_dict
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 # Load the Gemini API Key from environment variables
 API_KEY = os.getenv("GEMINI_API_KEY")
@@ -14,6 +16,7 @@ def index():
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
+    print(f"Request method: {request.method}")
     try:
         # Check if image was sent in the request
         if 'image' not in request.files:
