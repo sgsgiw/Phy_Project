@@ -515,123 +515,134 @@
             Made By Sayed Hadi. 2025.
         </footer>
     </div>
-
     <script>
-        // DOM Elements
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const capturedImage = document.getElementById('capturedImage');
-        const startBtn = document.getElementById('startBtn');
-        const captureBtn = document.getElementById('captureBtn');
-        const analyzeBtn = document.getElementById('analyzeBtn');
-        const result = document.getElementById('result');
-        const loader = document.getElementById('loader');
-        const cameraStatus = document.getElementById('cameraStatus');
+document.addEventListener('DOMContentLoaded', () => {
+    // DOM Elements
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const capturedImage = document.getElementById('capturedImage');
+    const startBtn = document.getElementById('startBtn');
+    const captureBtn = document.getElementById('captureBtn');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const result = document.getElementById('result');
+    const loader = document.getElementById('loader');
+    const cameraStatus = document.getElementById('cameraStatus');
 
-        // Global variables
-        let stream = null;
-        let imageData = null;
+    // Global variables
+    let stream = null;
+    let imageData = null;
 
-        // Start camera
-        startBtn.addEventListener('click', async () => {
-            try {
-                cameraStatus.textContent = "Accessing camera...";
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        width: { ideal: 640 },
-                        height: { ideal: 480 },
-                        facingMode: 'environment'
-                    }
-                });
-
-                video.srcObject = stream;
-                captureBtn.disabled = false;
-                startBtn.disabled = true;
-                cameraStatus.textContent = "Camera active. Position the element symbol in the frame.";
-            } catch (err) {
-                cameraStatus.textContent = `Error accessing camera: ${err.message}`;
-                console.error('Error accessing camera:', err);
-            }
-        });
-
-        // Capture photo
-        captureBtn.addEventListener('click', () => {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            // Convert canvas to data URL and display the captured image
-            imageData = canvas.toDataURL('image/jpeg');
-            capturedImage.src = imageData;
-
-            // Show captured image, hide video
-            video.style.display = 'none';
-            capturedImage.style.display = 'block';
-
-            // Enable analyze button, disable capture button
-            analyzeBtn.disabled = false;
-            captureBtn.disabled = true;
-
-            cameraStatus.textContent = "Image captured. Click 'Analyze Element' to process.";
-        });
-
-        // Analyze the element
-        analyzeBtn.addEventListener('click', async () => {
-            // Show loading indicator
-            loader.style.display = 'block';
-            result.innerHTML = '<p>Analyzing image...</p>';
-
-            try {
-                // Convert data URL to Blob
-                const blob = dataURLtoBlob(imageData);
-                const formData = new FormData();
-                formData.append('image', blob, 'captured_image.jpg');
-
-                // Send to backend for processing
-                const response = await fetch('/analyze', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Server responded with ${response.status}`);
-                }
-
-                const data = await response.json();
-                loader.style.display = 'none';
-
-                if (data.error) {
-                    result.innerHTML = `<p class="error">${data.error}</p>`;
-                } else {
-                    result.innerHTML = `<h3>${data.element}</h3><p>${data.details}</p>`;
-                }
-
-                // Reset buttons for new capture
-                captureBtn.disabled = false;
-                cameraStatus.textContent = "You can take another photo if needed.";
-
-            } catch (err) {
-                loader.style.display = 'none';
-                result.innerHTML = `<p class="error">Error during analysis: ${err.message}</p>`;
-                console.error('Error analyzing image:', err);
-            }
-        });
-
-        // Utility function to convert data URL to Blob
-        function dataURLtoBlob(dataURL) {
-            const parts = dataURL.split(';base64,');
-            const contentType = parts[0].split(':')[1];
-            const raw = window.atob(parts[1]);
-            const rawLength = raw.length;
-            const uInt8Array = new Uint8Array(rawLength);
-
-            for (let i = 0; i < rawLength; ++i) {
-                uInt8Array[i] = raw.charCodeAt(i);
-            }
-
-            return new Blob([uInt8Array], { type: contentType });
+    // Mock element data (you can expand this)
+    const elementDatabase = {
+        'H': {
+            name: 'Hydrogen',
+            details: 'The lightest and most abundant chemical element in the universe. Atomic number 1.'
+        },
+        'O': {
+            name: 'Oxygen',
+            details: 'A highly reactive nonmetallic element essential for respiration. Atomic number 8.'
+        },
+        'C': {
+            name: 'Carbon',
+            details: 'The basis of organic chemistry and all known life. Atomic number 6.'
         }
-    </script>
+    };
+
+    // Start camera (unchanged from previous script)
+    startBtn.addEventListener('click', async () => {
+        try {
+            cameraStatus.textContent = "Accessing camera...";
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    width: { ideal: 640 },
+                    height: { ideal: 480 },
+                    facingMode: 'environment'
+                }
+            });
+
+            video.srcObject = stream;
+            captureBtn.disabled = false;
+            startBtn.disabled = true;
+            cameraStatus.textContent = "Camera active. Position the element symbol in the frame.";
+        } catch (err) {
+            cameraStatus.textContent = `Error accessing camera: ${err.message}`;
+            console.error('Error accessing camera:', err);
+        }
+    });
+
+    // Capture photo (unchanged from previous script)
+    captureBtn.addEventListener('click', () => {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        imageData = canvas.toDataURL('image/jpeg');
+        capturedImage.src = imageData;
+
+        video.style.display = 'none';
+        capturedImage.style.display = 'block';
+
+        analyzeBtn.disabled = false;
+        captureBtn.disabled = true;
+
+        cameraStatus.textContent = "Image captured. Click 'Analyze Element' to process.";
+    });
+
+    // Analyze the element (modified to use mock backend)
+    analyzeBtn.addEventListener('click', async () => {
+        loader.style.display = 'block';
+        result.innerHTML = '<p>Analyzing image...</p>';
+
+        try {
+            // Simulate server processing delay
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            loader.style.display = 'none';
+
+            // Mock AI detection - you would replace this with actual AI/image processing
+            const mockDetectedElement = Object.keys(elementDatabase)[
+                Math.floor(Math.random() * Object.keys(elementDatabase).length)
+            ];
+
+            const elementInfo = elementDatabase[mockDetectedElement];
+
+            if (elementInfo) {
+                result.innerHTML = `
+                    <h3>Detected Element: ${mockDetectedElement}</h3>
+                    <h4>${elementInfo.name}</h4>
+                    <p>${elementInfo.details}</p>
+                `;
+            } else {
+                result.innerHTML = '<p class="error">Unable to identify the element. Please try again.</p>';
+            }
+
+            // Reset buttons for new capture
+            captureBtn.disabled = false;
+            cameraStatus.textContent = "You can take another photo if needed.";
+
+        } catch (err) {
+            loader.style.display = 'none';
+            result.innerHTML = `<p class="error">Error during analysis: ${err.message}</p>`;
+            console.error('Error analyzing image:', err);
+        }
+    });
+
+    // Utility function to convert data URL to Blob (unchanged)
+    function dataURLtoBlob(dataURL) {
+        const parts = dataURL.split(';base64,');
+        const contentType = parts[0].split(':')[1];
+        const raw = window.atob(parts[1]);
+        const rawLength = raw.length;
+        const uInt8Array = new Uint8Array(rawLength);
+
+        for (let i = 0; i < rawLength; ++i) {
+            uInt8Array[i] = raw.charCodeAt(i);
+        }
+
+        return new Blob([uInt8Array], { type: contentType });
+    }
+});
+ </script>
 </body>
 </html>
