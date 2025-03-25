@@ -10,7 +10,7 @@ load_dotenv()
 # Initialize EasyOCR reader
 reader = easyocr.Reader(['en'])  # Specify English language
 
-# Empty dictionary for elements
+# Dictionary for elements
 elements_dict = {
     "H": {"name": "Hydrogen", "atomic_number": 1, "symbol": "H"},
     "HE": {"name": "Helium", "atomic_number": 2, "symbol": "HE"},
@@ -94,33 +94,6 @@ elements_dict = {
     "OG": {"name": "Oganesson", "atomic_number": 118, "symbol": "OG"}
 }
 
-def capture_image_from_webcam(image_path):
-    """Opens webcam, waits for user to press 'q', and captures an image."""
-    cap = cv2.VideoCapture(0)  # Open default webcam
-
-    if not cap.isOpened():
-        raise RuntimeError("Could not open webcam.")
-
-    print("Press 'q' to capture the image.")
-
-    while True:
-        ret, frame = cap.read()  # Read frame from webcam
-        if not ret:
-            print("Failed to capture frame.")
-            break
-
-        cv2.imshow("Press 'q' to Capture", frame)  # Show the live video feed
-
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord('q'):  # Capture the image when 'q' is pressed
-            cv2.imwrite(image_path, frame)  # Save the captured image
-            print(f"Image captured and saved to {image_path}")
-            break
-
-    cap.release()
-    cv2.destroyAllWindows()  # Close the webcam window
-    return image_path
-
 def extract_text_from_image(image_path):
     """Extracts text from an image using EasyOCR."""
     try:
@@ -139,18 +112,16 @@ def extract_text_from_image(image_path):
         extracted_texts = reader.readtext(gray_image, detail=0)  # `detail=0` returns just the text
 
         if not extracted_texts:
-            return "No text detected in the image."
+            return None
 
         return " ".join(extracted_texts).strip()  # Combine all detected text
     except Exception as e:
         raise RuntimeError(f"Error during OCR processing: {e}") from e
 
-def chat_with_gemini(prompt):
+def chat_with_gemini(prompt, api_key):
     """Chats with the Gemini AI model, handling API key and errors."""
-    api_key = os.getenv("GOOGLE_API_KEY")
-
     if not api_key:
-        raise ValueError("GOOGLE_API_KEY environment variable not found. Set it using a .env file or system settings.")
+        raise ValueError("API key is required for Gemini AI.")
 
     try:
         # Configure Gemini API with the key
@@ -161,15 +132,13 @@ def chat_with_gemini(prompt):
     except Exception as e:
         raise RuntimeError(f"Error communicating with Gemini API: {e}") from e
 
-def get_element_details(image_path):
+def get_element_details(image_path, api_key):
     """Extracts element symbol from an image and gets details from Gemini AI."""
     # Extract text (element symbol) from the image using OCR
     element_symbol = extract_text_from_image(image_path)
 
     if not element_symbol:
         return "No element symbol detected in the image."
-
-    print(f"Detected Element Symbol: {element_symbol}")  # Debugging output
 
     # Clean up and process extracted symbol (e.g., remove extra spaces, ensure uppercase)
     element_symbol = element_symbol.strip().upper()
@@ -181,23 +150,9 @@ def get_element_details(image_path):
         prompt = f"Please provide detailed information about the element: {element_info['name']}"
         try:
             # Get the detailed response from Gemini AI
-            response = chat_with_gemini(prompt)
+            response = chat_with_gemini(prompt, api_key)
             return response
         except Exception as e:
             return f"Error while getting data from Gemini: {e}"
     else:
         return f"Element symbol '{element_symbol}' not found in the dictionary."
-
-# Main execution block
-if __name__ == "__main__":
-    image_path = "captured_image.jpg"  # Default image path
-
-    try:
-        # Open webcam and wait for user to press 'q' to capture the image
-        capture_image_from_webcam(image_path)
-
-        # Get element details from the captured image
-        response = get_element_details(image_path)
-        print(response)  # Print the response from Gemini AI
-    except Exception as e:
-        print(f"Error: {e}")  # Handle any errors gracefully
