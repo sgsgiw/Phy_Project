@@ -1,12 +1,11 @@
 from flask import Flask, render_template, request, jsonify
 import os
-import base64
 import tempfile
 from Chatnot import extract_text_from_image, chat_with_gemini, elements_dict
 
 app = Flask(__name__)
 
-# Load the Gemini API Key from environment variables (GitHub secret)
+# Load the Gemini API Key from environment variables
 API_KEY = os.getenv("GEMINI_API_KEY")
 
 @app.route('/')
