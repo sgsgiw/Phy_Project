@@ -6,6 +6,9 @@ from Chatnot import extract_text_from_image, chat_with_gemini, elements_dict
 
 app = Flask(__name__)
 
+# Load the Gemini API Key from environment variables (GitHub secret)
+API_KEY = os.getenv("GEMINI_API_KEY")
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -42,8 +45,8 @@ def analyze():
                 # Construct prompt for Gemini AI
                 prompt = f"Please provide detailed information about the element: {element_info['name']}"
                 
-                # Get response from Gemini AI
-                response = chat_with_gemini(prompt)
+                # Get response from Gemini AI using the API key
+                response = chat_with_gemini(prompt, API_KEY)
                 
                 return jsonify({
                     'element': f"{element_info['name']} ({element_info['symbol']})",
