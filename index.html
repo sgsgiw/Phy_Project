@@ -563,9 +563,8 @@
 
             // Convert canvas to data URL and display the captured image
             imageData = canvas.toDataURL('image/jpeg');
-            capturedImage.src = imageData;
-
-            // Show captured image, hide video
+            capturedImage.src = image
+                        // Show captured image, hide video
             video.style.display = 'none';
             capturedImage.style.display = 'block';
 
@@ -590,7 +589,7 @@
 
                 // Send to backend for processing
                 const response = await fetch('/analyze', {
-                    method: 'POST',
+                    method: 'POST', // Ensure this matches the server's allowed method
                     body: formData
                 });
 
