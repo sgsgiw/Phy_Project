@@ -3,6 +3,7 @@ import os
 import base64
 import tempfile
 from Chatnot import extract_text_from_image, chat_with_gemini, elements_dict
+from Chatnot import GOOGLE_API_KEY
 
 app = Flask(__name__)
 
